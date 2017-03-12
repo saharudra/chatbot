@@ -1,72 +1,31 @@
-var $messages = $('.messages-content'),
-    d, h, m,
-    i = 0;
+function init(){
+      var config = {
+            apiKey: "AIzaSyDObJ_Z67rfwIvLccUmcx7_OYFctA0ZYiM",
+            authDomain: "dotslash-41901.firebaseapp.com",
+            databaseURL: "https://dotslash-41901.firebaseio.com",
+            storageBucket: "dotslash-41901.appspot.com",
+            messagingSenderId: "519125585412"
+          };
+          firebase.initializeApp(config);
 
-$(window).load(function() {
-  $messages.mCustomScrollbar();
-  setTimeout(function() {
-    //fakeMessage();
-  }, 100);
-});
+          var defaultDatabase = firebase.database();
 
-function updateScrollbar() {
-  $messages.mCustomScrollbar("update").mCustomScrollbar('scrollTo', 'bottom', {
-    scrollInertia: 10,
-    timeout: 0
-  });
+   FriendlyChat(defaultDatabase);
+
 }
 
-function setDate(){
-  d = new Date()
-  if (m != d.getMinutes()) {
-    m = d.getMinutes();
-    $('<div class="timestamp">' + d.getHours() + ':' + m + '</div>').appendTo($('.message:last'));
-  }
-}
+function FriendlyChat(database) {
+      // Reference to the /messages/ database path.
+      messagesRef = database.ref('messages');
+      // Make sure we remove all previous listeners.
+      messagesRef.off();
 
-function insertMessage() {
-  msg = $('.message-input').val();
-  if ($.trim(msg) == '') {
-    return false;
-  }
-  $('<div class="message message-personal">' + msg + '</div>').appendTo($('.mCSB_container')).addClass('new');
-  setDate();
-  $('.message-input').val(null);
-  updateScrollbar();
-	interact(msg);
-  setTimeout(function() {
-    //fakeMessage();
-  }, 1000 + (Math.random() * 20) * 100);
-}
-
-$('.message-submit').click(function() {
-  insertMessage();
-});
-
-$(window).on('keydown', function(e) {
-  if (e.which == 13) {
-    insertMessage();
-    return false;
-  }
-})
-
-
-function interact(message){
-	// loading message
-  $('<div class="message loading new"><figure class="avatar"><img src="/static/res/botim.png" /></figure><span></span></div>').appendTo($('.mCSB_container'));
-	// make a POST request [ajax call]
-	$.post('/message', {
-		msg: message,
-	}).done(function(reply) {
-		// Message Received
-		// 	remove loading meassage
-    $('.message.loading').remove();
-		// Add message to chatbox
-    $('<div class="message new"><figure class="avatar"><img src="/static/res/botim.png" /></figure>' + reply['text'] + '</div>').appendTo($('.mCSB_container')).addClass('new');
-    setDate();
-    updateScrollbar();
-
-		}).fail(function() {
-				alert('error calling function');
-				});
-}
+      // Loads the last 12 messages and listen for new ones.
+      var setMessage = function(data) {
+        console.log("H: ", data);
+        var val = data.val();
+        console.log("Here: ", val);
+      };
+      messagesRef.limitToLast(12).on('child_added', setMessage);
+      messagesRef.limitToLast(12).on('child_changed', setMessage);
+};

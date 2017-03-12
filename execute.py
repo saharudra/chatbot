@@ -94,16 +94,17 @@ def create_model(session, forward_only):
       return model
 
   ckpt = tf.train.get_checkpoint_state(gConfig['working_directory'])
+  ckpt.model_checkpoint_path = u'working_dir/seq2seq.ckpt-47100'
   # the checkpoint filename has changed in recent versions of tensorflow
   checkpoint_suffix = ""
   if tf.__version__ > "0.12":
       checkpoint_suffix = ".index"
-  if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path + checkpoint_suffix):
+  if ckpt:
     print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
-  model.saver.restore(session, '/home/rudrasaha/Downloads/hackathon/tensorflow_chatbot/working_dir/seq2seq.ckpt-47100')
-  #else:
-   # print("Created model with fresh parameters.")
-   # session.run(tf.initialize_all_variables())
+    model.saver.restore(session, ckpt.model_checkpoint_path)
+  else:
+    print("Created model with fresh parameters.")
+    session.run(tf.initialize_all_variables())
   return model
 
 
